@@ -26,3 +26,9 @@ dependencies {
     compile  "org.jruby.jcodings:jcodings:1.0.18"
 //    testCompile "junit:junit:4.+"
 }
+
+shadowJar {
+    manifest {
+        attributes 'Main-Class': 'Run'
+    }
+} 

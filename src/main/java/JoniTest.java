@@ -4,25 +4,38 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.Locale;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-
-class RegexTest
+import org.jcodings.specific.UTF8Encoding;
+import org.joni.Matcher;
+import org.joni.NameEntry;
+import org.joni.Option;
+import org.joni.Regex;
+import org.joni.Region;
+class JoniTest
 {
-    public static void main(String[] args)
+    private String file;
+    private String format;
+    public JoniTest(String file,String format){
+        this.format = format;
+        this.file = file;
+    }
+
+    public void run()
     {
-        String regex = "^(?<host>[^ ]*) [^ ]* (?<user>[^ ]*) \\[(?<time>[^\\]]*)\\] \"(?<method>\\S+)(?: +(?<path>[^ ]*) +\\S*)?\" (?<code>[^ ]*) (?<size>[^ ]*)(?: \"(?<referer>[^\\\"]*)\" \"(?<agent>[^\\\"]*)\")?$";
-        Pattern pattern = Pattern.compile(regex);
+        byte[] pattern = format.getBytes(StandardCharsets.UTF_8);
+        Regex regexp = new Regex(pattern, 0, pattern.length, Option.NONE, UTF8Encoding.INSTANCE);
+
         int match = 0;
 
-        try (BufferedReader br = Files.newBufferedReader(Paths.get(args[0]), StandardCharsets.UTF_8)) {
+        try (BufferedReader br = Files.newBufferedReader(Paths.get(file), StandardCharsets.UTF_8)) {
             while (true) {
                 String line = br.readLine();
                 if (line == null) {
                     break;
                 }
-                Matcher matcher = pattern.matcher(line);
-                if (matcher.matches()) {
+                byte[] line_bytes = line.getBytes(StandardCharsets.UTF_8);
+                Matcher matcher = regexp.matcher(line_bytes);
+                int result = matcher.search(0, line_bytes.length, Option.DEFAULT);
+                if (result!=1) {
                     match++;
                 }
             }
